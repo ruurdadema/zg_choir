@@ -154,6 +154,15 @@ private:
    uint16 _acceptPort;
 };
 
+class TestSubscriber : public ITreeGatewaySubscriber
+{
+public:
+    TestSubscriber(ITreeGateway* optGateway) : ITreeGatewaySubscriber(optGateway)
+    {
+        AddTreeSubscription("project/magnets/*");
+    }
+};
+
 int RunFridgeServerProcess(const char * systemName)
 {
    int exitCode = 10;
@@ -170,6 +179,9 @@ int RunFridgeServerProcess(const char * systemName)
 
    // Our FridgeServer business logic is all implemented inside this object
    FridgePeerSession fridgePeerSession(systemName);
+
+   // Test subscriber
+   TestSubscriber testSubscriber(fridgePeerSession.GetClientTreeGateway());
 
    // This object will read from stdin for us, so we can accept typed text commands from the user
    ZGStdinSession stdinSession(fridgePeerSession, true);
