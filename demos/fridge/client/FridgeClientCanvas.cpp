@@ -98,7 +98,8 @@ void FridgeClientCanvas :: UploadNewMagnet(int x, int y, const String & word)
    (void) BeginUndoSequence(String("Create Magnet \"%1\"").Arg(newMagnet.GetText()));
 
    status_t ret;
-   if (UploadMagnetState(GetEmptyString(), &newMagnet, false).IsError(ret)) LogTime(MUSCLE_LOG_ERROR, "Couldn't upload new magnet, error [%s]\n", ret());
+
+   _lastSentTime = GetRunTime64();
 
    (void) EndUndoSequence();
 }
@@ -188,6 +189,8 @@ void FridgeClientCanvas :: TreeNodeUpdated(const String & nodePath, const Messag
 {
    if (nodePath.StartsWith("project/magnets/"))
    {
+      LogTime(MUSCLE_LOG_DEBUG, "Magnet creation took %llu milliseconds\n", (GetRunTime64() - _lastSentTime) / 1000);
+
       const bool hadMagnets = HasMagnets();
 
       const String nodeName = nodePath.Substring("/");

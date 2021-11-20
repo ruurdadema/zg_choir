@@ -9,6 +9,8 @@ int main(int argc, char ** argv)
    CompleteSetupSystem css;
    QApplication app(argc, argv);
 
+   SetConsoleLogLevel(MUSCLE_LOG_DEBUG);
+
    // Network I/O threads will rely on this object to call callback
    // methods safely from within the context of the main/GUI/Qt thread.
    QSocketCallbackMechanism qcbm;

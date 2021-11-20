@@ -52,6 +52,7 @@ private:
    QPoint _dragDelta;   // mouse-click position minus upper-left position
 
    bool _firstMouseMove;
+   uint64 _lastSentTime = 0;
 };
 
 }; // end namespace fridge
