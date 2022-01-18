@@ -8,6 +8,9 @@ TestSubscriber::TestSubscriber(zg::ITreeGateway * optGateway, const muscle::Stri
     // Subscribe to given node path.
     if (AddTreeSubscription(nodePath).IsError(ret))
         muscle::LogTime(muscle::MUSCLE_LOG_ERROR, "Error: %s\n", ret.GetDescription());
+
+    if (AddTreeSubscription("project/test").IsError(ret))
+        muscle::LogTime(muscle::MUSCLE_LOG_ERROR, "Error: %s\n", ret.GetDescription());
 }
 
 TestSubscriber::~TestSubscriber()
@@ -35,14 +38,21 @@ TestSubscriberFactory::TestSubscriberFactory(zg::ITreeGateway * optGateway) : zg
 
 void TestSubscriberFactory::TreeNodeUpdated(const muscle::String &nodePath, const muscle::MessageRef & optPayloadMsg, const muscle::String &)
 {
-    if (optPayloadMsg())
+    // NOTE: This method will never be called for "project/test"
+
+    muscle::LogTime(muscle::MUSCLE_LOG_ERROR, "TestSubscriberFactory::TreeNodeUpdated for node: %s\n", nodePath.Cstr());
+
+    if (nodePath.StartsWith("project/magnets/"))
     {
-        // Instantiate a TestSubscriber, which will subscribe itself to given node path.
-        if (auto* value = mTestSubscribers.GetOrPut(nodePath))
-            *value = std::make_shared<TestSubscriber>(GetGateway(), "project/test");
-    }
-    else
-    {
-        mTestSubscribers.Remove(nodePath);
+        if (optPayloadMsg())
+        {
+            // Instantiate a TestSubscriber, which will subscribe itself to given node path.
+            if (auto* value = mTestSubscribers.GetOrPut(nodePath))
+                *value = std::make_shared<TestSubscriber>(GetGateway(), "project/test");
+        }
+        else
+        {
+            mTestSubscribers.Remove(nodePath);
+        }
     }
 }
