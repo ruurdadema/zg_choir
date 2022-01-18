@@ -8,6 +8,7 @@
 #include "zg/messagetree/server/ServerSideMessageTreeSession.h"
 #include "zg/messagetree/server/UndoStackMessageTreeDatabaseObject.h"
 #include "common/FridgeConstants.h"
+#include "TestSubscriber.h"
 
 namespace fridge {
 
@@ -93,6 +94,14 @@ protected:
 
          status_t ret;
          if (SetDataNode("magnets", GetMessageFromPool()).IsError(ret)) LogTime(MUSCLE_LOG_CRITICALERROR, "MagnetsMessageTreeDatabaseObject::SetToDefaultState():  Couldn't set magnets node! [%s]\n", ret());
+
+         // Add a test node
+         auto msg = GetMessageFromPool();
+         if (msg.IsValid())
+         {
+             if (msg()->AddString("some_field", "Just some test string").IsError(ret)) LogTime(MUSCLE_LOG_CRITICALERROR, "MagnetsMessageTreeDatabaseObject::SetToDefaultState():  Couldn't set test node's field! [%s]\n", ret());;
+             if (SetDataNode("test", msg).IsError(ret)) LogTime(MUSCLE_LOG_CRITICALERROR, "MagnetsMessageTreeDatabaseObject::SetToDefaultState():  Couldn't set test node! [%s]\n", ret());
+         }
       }
 
       virtual void MessageReceivedFromTreeGatewaySubscriber(const ZGPeerID & fromPeerID, const MessageRef & payload, const String & tag)
@@ -202,6 +211,8 @@ int RunFridgeServerProcess(const char * systemName)
      &&(server.AddNewSession(DummyZGPeerSessionRef(fridgePeerSession)).IsOK(ret))
      &&(server.AddNewSession(DummyDiscoveryServerSessionRef(sdss)).IsOK(ret)))
    {
+      TestSubscriberFactory factory(fridgePeerSession.GetClientTreeGateway());
+
       // Virtually all of the program's execution time happens inside the ServerProcessLoop() method
       ret = server.ServerProcessLoop();  // doesn't return until it's time to exit
       if (ret.IsOK())

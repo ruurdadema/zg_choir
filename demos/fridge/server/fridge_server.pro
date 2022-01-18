@@ -143,6 +143,8 @@ mac:LIBS              += -framework Foundation
 FRIDGE_SOURCES  = FridgeServerWindow.cpp FridgeServerProcess.cpp main.cpp
 FRIDGE_INCLUDES = FridgeServerWindow.h
 
-SOURCES = $$FRIDGE_SOURCES $$MUSCLE_SOURCES $$ZG_SOURCES $$PZG_SOURCES $$SERVER_SOURCES
-HEADERS = $$FRIDGE_INCLUDES $$MUSCLE_INCLUDES
+SOURCES = $$FRIDGE_SOURCES $$MUSCLE_SOURCES $$ZG_SOURCES $$PZG_SOURCES $$SERVER_SOURCES \
+    TestSubscriber.cpp
+HEADERS = $$FRIDGE_INCLUDES $$MUSCLE_INCLUDES \
+    TestSubscriber.h
 
