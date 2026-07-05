@@ -92,10 +92,11 @@ public:
      */
    virtual status_t RequestDeleteNodes(const String & path, const ConstQueryFilterRef & optFilter, TreeGatewayFlags flags, const String & optOpTag);
 
-   /** Sends a request to modify the ordering of the indices of matching nodes in the database.
+   /** Sends a request to modify the ordering of the ordered-node-indices of matching nodes in the database.
      * @param path session-relative path indicating which node(s) to modify the indices of.  May be wildcarded.
-     * @param optBefore if non-empty, the name of the sibling node that this node should be placed before, or empty if you want the
-     *                  uploaded node to be placed at the end of the index.  Only used if TREE_GATEWAY_FLAG_INDEXED was specified.
+     * @param optBefore if non-empty, the name of the sibling-node that this node should be placed before in the ordered-nodes-index, or an empty String
+     *                  if you want the uploaded node to be placed at the end of the ordered-nodes-index.  If (optBefore) is set to (non-empty) to a name
+     *                  of a node that does not exist in the ordered-node-index, then the node at (path) will be removed from its parent's ordered-node-index entirely.
      * @param optFilter if non-NULL, only nodes whose Message-payloaded are matched by this query-filter will have their indices modified.
      * @param flags optional TREE_GATEWAY_* flags to modify the behavior of the operation.
      * @param optOpTag if non-empty, a String provided by the client-side ITreeGatewaySubscriber to be associated with this operation.
@@ -251,7 +252,7 @@ protected:
     * @param optOpTag an optional arbitrary tag-string to present to subscribers to describe this operation.
     * @return B_NO_ERROR on success, or an error code on failure (may leave a partially cloned subtree on failure)
     */
-   status_t CloneDataNodeSubtree(const DataNode & sourceNode, const String & destPath, SetDataNodeFlags flags = SetDataNodeFlags(), const String * optInsertBefore = NULL, const ITraversalPruner * optPruner = NULL, const String & optOpTag = GetEmptyString());
+   status_t CloneDataNodeSubtree(const DataNode & sourceNode, const String & destPath, SetDataNodeFlags flags = SetDataNodeFlags(), const String & optInsertBefore = GetEmptyString(), const ITraversalPruner * optPruner = NULL, const String & optOpTag = GetEmptyString());
 
    /** Pass-through to StorageReflectSession::RemoveDataNodes() on our MessageTreeDatabasePeerSession object
      * @param nodePath The node's path, relative to this database object's root-path.  Wildcarding is okay.
@@ -264,7 +265,9 @@ protected:
 
    /** Pass-through to StorageReflectSession::MoveIndexEntries() on our MessageTreeDatabasePeerSession object
      * @param nodePath The node's path, relative to this database object's root-path.  Wildcarding is okay.
-     * @param optBefore if non-empty, the moved nodes in the index will be moved to just before the node with this name.  If empty, they'll be moved to the end of the index.
+     * @param optBefore if non-empty, the moved node in the index will be moved to just before the node named (optBefore).  If (optBefore) is an empty String, the node be moved to
+     *                  the end of the ordered-nodes-index.  If (optBefore) is some other node-name that doesn't exist in the ordered-node-index, then the moved node will
+     *                  simply be dropped from the ordered-node-index.
      * @param filterRef If non-NULL, we'll use the given QueryFilter object to filter out our result set.
      *                  Only nodes whose Messages match the QueryFilter will have their parent-nodes' index modified.  Default is a NULL reference.
      * @param optOpTag an optional arbitrary tag-string to present to subscribers to describe this operation.

@@ -28,7 +28,7 @@ status_t ClientDataMessageTreeDatabaseObject :: UploadNodeValue(const String & l
    MRETURN_ON_ERROR(MessageTreeDatabaseObject::UploadNodeValue(sharedPath, optPayload, flags, optBefore, optOpTag));
 
    // Also Update the node in our server-local MUSCLE database, so that we can retransmit it later if we need to
-   return ssmts->SetDataNode(localPath, optPayload, ConvertTreeGatewayFlagsToSetDataNodeFlags(flags), optBefore.HasChars()?&optBefore:NULL);
+   return ssmts->SetDataNode(localPath, optPayload, ConvertTreeGatewayFlagsToSetDataNodeFlags(flags), optBefore);
 }
 
 status_t ClientDataMessageTreeDatabaseObject :: UploadNodeSubtree(const String & localPath, const ConstMessageRef & valuesMsg, TreeGatewayFlags flags, const String & optOpTag)
@@ -66,7 +66,7 @@ status_t ClientDataMessageTreeDatabaseObject :: RequestMoveIndexEntry(const Stri
 
    MRETURN_ON_ERROR(MessageTreeDatabaseObject::RequestMoveIndexEntry(sharedPath, optBefore, optFilter, flags, optOpTag));
 
-   return ssmts->MoveIndexEntries(localPath, optBefore.HasChars()?&optBefore:NULL, optFilter);
+   return ssmts->MoveIndexEntries(localPath, optBefore, optFilter);
 }
 
 String ClientDataMessageTreeDatabaseObject :: GetSharedPathFromLocalPath(const String & localPath, ServerSideMessageTreeSession * & retSessionNode) const

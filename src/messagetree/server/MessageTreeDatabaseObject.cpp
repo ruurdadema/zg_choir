@@ -488,7 +488,7 @@ status_t MessageTreeDatabaseObject :: HandleNodeUpdateMessageAux(const Message &
       }
 
 //printf("   SetDataNode [%s] -> %p (%s) (flags=%s optBefore=[%s])\n", sessionRelativePath(), optPayload(), flags.ToHexString()(), flags.ToHexString()(), optBefore());
-      const status_t ret = zsh->SetDataNode(sessionRelativePath, optPayload, ConvertTreeGatewayFlagsToSetDataNodeFlags(flags), optBefore.HasChars()?&optBefore:NULL);
+      const status_t ret = zsh->SetDataNode(sessionRelativePath, optPayload, ConvertTreeGatewayFlagsToSetDataNodeFlags(flags), optBefore);
       return ((ret.IsOK())||((ret == B_ACCESS_DENIED)&&(flags.AreAnyOfTheseBitsSet(TREE_GATEWAY_FLAG_DONTCREATENODE, TREE_GATEWAY_FLAG_DONTOVERWRITEDATA)))) ? B_NO_ERROR : ret;
    }
    else return RemoveDataNodes(DatabaseSubpathToSessionRelativePath(path, flags), ConstQueryFilterRef(), flags.IsBitSet(TREE_GATEWAY_FLAG_NOREPLY));
@@ -582,7 +582,7 @@ status_t MessageTreeDatabaseObject :: MoveIndexEntries(const String & nodePath, 
    const SafeQueryFilter safeQF(this);
    AndQueryFilter andQF = AndQueryFilter(DummyConstQueryFilterRef(safeQF));
    if (filterRef()) (void) andQF.GetChildren().AddTail(filterRef);
-   return zsh->MoveIndexEntries(nodePath, optBefore.HasChars()?&optBefore:NULL, DummyConstQueryFilterRef(andQF));
+   return zsh->MoveIndexEntries(nodePath, optBefore, DummyConstQueryFilterRef(andQF));
 }
 
 MessageTreeDatabasePeerSession * MessageTreeDatabaseObject :: GetMessageTreeDatabasePeerSession() const
@@ -601,7 +601,7 @@ status_t MessageTreeDatabaseObject :: SetDataNode(const String & nodePath, const
    DECLARE_OP_TAG_GUARD;
 
    MessageTreeDatabasePeerSession * zsh = GetMessageTreeDatabasePeerSession();
-   return zsh ? zsh->SetDataNode(DatabaseSubpathToSessionRelativePath(nodePath, TreeGatewayFlags()), dataMsgRef, flags, optInsertBefore.HasChars()?&optInsertBefore:NULL) : B_BAD_OBJECT;
+   return zsh ? zsh->SetDataNode(DatabaseSubpathToSessionRelativePath(nodePath, TreeGatewayFlags()), dataMsgRef, flags, optInsertBefore) : B_BAD_OBJECT;
 }
 
 status_t MessageTreeDatabaseObject :: FindMatchingNodes(const String & nodePath, const ConstQueryFilterRef & filter, Queue<DataNodeRef> & retMatchingNodes, uint32 maxResults) const
@@ -630,7 +630,7 @@ status_t MessageTreeDatabaseObject :: RestoreNodeTreeFromMessage(const Message &
    return zsh ? zsh->RestoreNodeTreeFromMessage(msg, DatabaseSubpathToSessionRelativePath(path, TreeGatewayFlags()), loadData, flags, maxDepth, optPruner) : B_BAD_OBJECT;
 }
 
-status_t MessageTreeDatabaseObject :: CloneDataNodeSubtree(const DataNode & sourceNode, const String & destPath, SetDataNodeFlags flags, const String * optInsertBefore, const ITraversalPruner * optPruner, const String & optOpTag)
+status_t MessageTreeDatabaseObject :: CloneDataNodeSubtree(const DataNode & sourceNode, const String & destPath, SetDataNodeFlags flags, const String & optInsertBefore, const ITraversalPruner * optPruner, const String & optOpTag)
 {
    DECLARE_OP_TAG_GUARD;
 
