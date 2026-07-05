@@ -178,9 +178,9 @@ status_t ClientSideNetworkTreeGateway :: TreeGateway_RequestMoveIndexEntry(ITree
 
    if (optFilterRef()) MRETURN_ON_ERROR(msg()->AddArchiveMessage(NTG_NAME_QUERYFILTER, *optFilterRef()));
 
-   MRETURN_ON_ERROR(msg()->CAddString(NTG_NAME_PATH,  path));
-   MRETURN_ON_ERROR(msg()->CAddString(NTG_NAME_TAG,   optOpTag));
-   MRETURN_ON_ERROR(msg()->CAddFlat(  NTG_NAME_FLAGS, flags));
+   MRETURN_ON_ERROR(msg()->CAddString(NTG_NAME_PATH,   path));
+   MRETURN_ON_ERROR(msg()->CAddString(NTG_NAME_TAG,    optOpTag));
+   MRETURN_ON_ERROR(msg()->CAddFlat(  NTG_NAME_FLAGS,  flags));
    MRETURN_ON_ERROR(msg()->CAddString(NTG_NAME_BEFORE, optBefore));
    return SendOutgoingMessageToNetwork(msg);
 }

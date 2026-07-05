@@ -64,8 +64,9 @@ public:
      * @param optPayload reference to the Message payload you want added/updated at the given path, or a NULL reference if you want
      *                   node(s) matching the given path to be deleted.
      * @param flags optional TREE_GATEWAY_* flags to modify the behavior of the upload.
-     * @param optBefore if non-empty, the name of the sibling node that this node should be placed before, or empty if you want the
-     *                  uploaded node to be placed at the end of the index.  Only used if TREE_GATEWAY_FLAG_INDEXED was specified.
+     * @param optBefore the name of the sibling node that this node should be placed before.  If no such sibling node exists, this node
+     *                  will be appended to the end of the index instead.  Only used if TREE_GATEWAY_FLAG_INDEXED was specified.
+     *                  If PR_NAME_REMOVE_FROM_INDEX is passed for this argument, the node will be removed from its ordered-nodes-index entirely.
      * @param optOpTag if non-empty, a String provided by the client-side ITreeGatewaySubscriber to be associated with this operation.
      *                 Subscribers will receive this tag as part of their TreeNodeUpdated() callbacks.  This string can be whatever the caller likes.
      * @returns B_NO_ERROR on success, or another error code on failure.
@@ -94,9 +95,9 @@ public:
 
    /** Sends a request to modify the ordering of the ordered-node-indices of matching nodes in the database.
      * @param path session-relative path indicating which node(s) to modify the indices of.  May be wildcarded.
-     * @param optBefore if non-empty, the name of the sibling-node that this node should be placed before in the ordered-nodes-index, or an empty String
-     *                  if you want the uploaded node to be placed at the end of the ordered-nodes-index.  If (optBefore) is set to (non-empty) to a name
-     *                  of a node that does not exist in the ordered-node-index, then the node at (path) will be removed from its parent's ordered-node-index entirely.
+     * @param optBefore the name of the sibling-node that this node should be placed ahead of, in the ordered-nodes-index.  If no such sibling node
+     *                  exists, this entry will be moved to the end of the ordered-node-index instead.  As a special case, you can pass in
+     *                  PR_NAME_REMOVE_FROM_INDEX as this argument to have the node removed from the ordered-node-index entirely.
      * @param optFilter if non-NULL, only nodes whose Message-payloaded are matched by this query-filter will have their indices modified.
      * @param flags optional TREE_GATEWAY_* flags to modify the behavior of the operation.
      * @param optOpTag if non-empty, a String provided by the client-side ITreeGatewaySubscriber to be associated with this operation.
@@ -215,8 +216,9 @@ protected:
      * @param nodePath The node's path, relative to this database object's root-path.
      * @param dataMsgRef The value to set the node to
      * @param flags list of SETDATANODE_FLAG_* values to affect our behavior.  Defaults to no-bits-set.
-     * @param optInsertBefore If (addToIndex) is true, this may be the name of the node to insert this new node before in the index.
-     *                        If empty, the new node will be appended to the end of the index.  If (addToIndex) is false, this argument is ignored.
+     * @param optInsertBefore If (flags.IsBitSet(SETDATANODE_FLAG_ADDTOINDEX)) returns true, this may be the name of the sibling node to insert this new node before in the index.
+     *                        If no such sibling node exists, the new node will be appended to the end of the index.  If (flags.IsBitSet(SETDATANODE_FLAG_ADDTOINDEX)) returns false, this argument is ignored.
+     *                        As a special case, you may pass in PR_NAME_REMOVE_FROM_INDEX to remove the node from the ordered-nodes-index entirely.
      * @param optOpTag an optional arbitrary tag-string to present to subscribers to describe this operation.
      * @return B_NO_ERROR on success, or an error code on failure.
      */
@@ -245,8 +247,7 @@ protected:
     * @param sourceNode Reference to a DataNode to clone.
     * @param destPath Path of where the newly created node subtree will appear.  Should be relative to our home node.
     * @param flags optional bit-chord of SETDATANODE_FLAG_* flags to modify our behavior.  Defaults to no-flags-set.
-    * @param optInsertBefore If (addToTargetIndex) is true, this argument will be passed on to InsertOrderedChild().
-    *                        Otherwise, this argument is ignored.
+    * @param optInsertBefore this argument will be passed on to InsertOrderedChild() as necessary.
     * @param optPruner If non-NULL, this object can be used as a callback to prune the traversal or filter
     *                  the MessageRefs cloned.
     * @param optOpTag an optional arbitrary tag-string to present to subscribers to describe this operation.
@@ -265,9 +266,9 @@ protected:
 
    /** Pass-through to StorageReflectSession::MoveIndexEntries() on our MessageTreeDatabasePeerSession object
      * @param nodePath The node's path, relative to this database object's root-path.  Wildcarding is okay.
-     * @param optBefore if non-empty, the moved node in the index will be moved to just before the node named (optBefore).  If (optBefore) is an empty String, the node be moved to
-     *                  the end of the ordered-nodes-index.  If (optBefore) is some other node-name that doesn't exist in the ordered-node-index, then the moved node will
-     *                  simply be dropped from the ordered-node-index.
+     * @param optBefore Name of the sibling node that the moved node should be placed just before in the ordered-nodes index.  If no such sibling node exists, the moved
+     *                  node will be moved to the end of the ordered-nodes index.  As a special case, passing PR_NAME_REMOVE_FROM_INDEX to this argument will cause
+     *                  the moved node to be removed from the ordered-nodes index entirely.
      * @param filterRef If non-NULL, we'll use the given QueryFilter object to filter out our result set.
      *                  Only nodes whose Messages match the QueryFilter will have their parent-nodes' index modified.  Default is a NULL reference.
      * @param optOpTag an optional arbitrary tag-string to present to subscribers to describe this operation.

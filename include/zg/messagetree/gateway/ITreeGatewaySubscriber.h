@@ -189,8 +189,8 @@ protected:
      *              uploaded node to be added to its parent's ordered-children index, and TREE_GATEWAY_FLAG_NOREPLY will prevent any notifications about
      *              this upload from being delivered to any clients (including the caller).
      * @param optBefore Specifies where in the parent's node-index this node should be inserted.  Only used if TREE_GATEWAY_FLAG_INDEXED was specified in the (flags)
-     *                  argument.  If non-empty, the node will be inserted directly before the child node with the specified name; or if empty, the node will be
-     *                  inserted at the end of the index.  Defaults to an empty string.
+     *                  argument.  If a sibling node with this name exists, the node will be inserted immediately before the sibling node with the specified name;
+     *                  otherwise the node will be inserted at the end of the index.
      * @param optOpTag An optional string to associate with this operation.  It can be anything you like; it will be passed on verbatim to the TreeNodeUpdated()
      *                 callbacks that subscribed ITreeGatewaySubscriber objects receive as a result of this operation.  Defaults to an empty string.
      * @returns B_NO_ERROR on success, or some other error value on failure.
@@ -220,7 +220,8 @@ protected:
 
    /** Request that an entry within the index of parent-node of one or more specified nodes be moved to a different location in its index.
      * @param nodePath Session-relative path to the node (or nodes) to move within their parents' node-indices.  May be wildcarded (although I'm not sure how useful that is).
-     * @param optBefore Specifies where in the parent's node-index the node should be moved to.
+     * @param optBefore Specifies where in the parent's node-index the node should be moved to.  If no sibling node with this name exists, the node will be moved to the end of
+     *                  the index.  As a special case, if PR_NAME_REMOVE_FROM_INDEX, the node will be removed from the index entirely.
      * @param optFilterRef if non-NULL, reference to a QueryFilter object that the server will use to limit which nodes get moved.
      * @param flags If specified, these flags can influence the behavior of the upload operation.  Currently this argument is ignored.
      * @param optOpTag An optional string to associate with this operation.  It can be anything you like; it will be passed on verbatim to the TreeNodeUpdated()
