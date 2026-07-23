@@ -277,8 +277,8 @@ void MessageTreeDatabaseObject :: MessageTreeNodeIndexChanged(const String & rel
    // Update our running database-checksum to account for the changes being made to our subtree
    switch(op)
    {
-      case INDEX_OP_ENTRYINSERTED: _checksum += key.CalculateChecksum(); break;
-      case INDEX_OP_ENTRYREMOVED:  _checksum -= key.CalculateChecksum(); break;
+      case INDEX_OP_ENTRYINSERTED: _checksum += key.CalculateChecksum(); break;  // note that I deliberately don't include (index)
+      case INDEX_OP_ENTRYREMOVED:  _checksum -= key.CalculateChecksum(); break;  // in the checksum as doing so would require O(N) calculations every time we got here
       case INDEX_OP_CLEARED:       LogTime(MUSCLE_LOG_CRITICALERROR, "MessageTreeNodeIndexChanged():  checksum-update for INDEX_OP_CLEARED is not implemented!  (%s)\n", relativePath()); break;  // Dunno how to handle this, and it never gets called anyway
    }
 }
