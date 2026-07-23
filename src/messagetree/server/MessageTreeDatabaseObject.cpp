@@ -261,11 +261,11 @@ status_t MessageTreeDatabaseObject :: SeniorRecordNodeUpdateMessage(const String
    return AssembleBatchMessage(assemblingMessage, msg, prepend);
 }
 
-void MessageTreeDatabaseObject :: MessageTreeNodeIndexChanged(const String & relativePath, DataNode & /*node*/, char op, uint32 index, const String & key)
+void MessageTreeDatabaseObject :: MessageTreeNodeIndexChanged(const String & relativePath, DataNode & node, char opCode, uint32 index, const String & key)
 {
    if (IsInSeniorDatabaseUpdateContext())
    {
-      const status_t ret = SeniorRecordNodeIndexUpdateMessage(relativePath, op, index, key, _assembledJuniorMessage, false, GetCurrentOpTag());
+      const status_t ret = SeniorRecordNodeIndexUpdateMessage(relativePath, opCode, index, key, _assembledJuniorMessage, false, GetCurrentOpTag());
       if (ret.IsError()) LogTime(MUSCLE_LOG_CRITICALERROR, "MessageTreeNodeIndexChanged %p:  Error assembling junior message for node-index-update to [%s]!  [%s]\n", this, relativePath(), ret());
    }
    else if ((IsInJuniorDatabaseUpdateContext() == false)&&(IsInSetupOrTeardown() == false))
@@ -274,13 +274,8 @@ void MessageTreeDatabaseObject :: MessageTreeNodeIndexChanged(const String & rel
       (void) PrintStackTrace();
    }
 
-   // Update our running database-checksum to account for the changes being made to our subtree
-   switch(op)
-   {
-      case INDEX_OP_ENTRYINSERTED: _checksum += key.CalculateChecksum(); break;  // note that I deliberately don't include (index)
-      case INDEX_OP_ENTRYREMOVED:  _checksum -= key.CalculateChecksum(); break;  // in the checksum as doing so would require O(N) calculations every time we got here
-      case INDEX_OP_CLEARED:       LogTime(MUSCLE_LOG_CRITICALERROR, "MessageTreeNodeIndexChanged():  checksum-update for INDEX_OP_CLEARED is not implemented!  (%s)\n", relativePath()); break;  // Dunno how to handle this, and it never gets called anyway
-   }
+   const status_t r = node.UpdateRunningChecksumToReflectOrderedIndexUpdate(opCode, index, key, _checksum);
+   if (r.IsError()) LogTime(MUSCLE_LOG_ERROR, "MessageTreeNodeIndexChanged(): UpdateRunningChecksumToReflectOrderedIndexUpdate(opCode=%c, index=" UINT32_FORMAT_SPEC ", key=[%s]) returned [%s] for node [%s]\n", opCode, index, key(), r(), node.GetNodePath()());
 }
 
 status_t MessageTreeDatabaseObject :: SeniorRecordNodeIndexUpdateMessage(const String & relativePath, char op, uint32 index, const String & key, MessageRef & assemblingMessage, bool prepend, const String & optOpTag)
